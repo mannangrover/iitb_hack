@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import json
 import os
+import tomllib
 from datetime import datetime
 import pandas as pd
 import altair as alt
@@ -14,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS with fixed header
+# Custom CSS with sticky header
 st.markdown("""
 <style>
     /* Hide the top streamlit menu */
@@ -26,15 +27,13 @@ st.markdown("""
         padding-top: 0;
     }
     
-    /* Fixed header - truly fixed to top of page */
+    /* Sticky header (cloud-safe) */
     .header-container {
-        position: fixed !important;
+        position: sticky !important;
         top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 12px 20px;
-        z-index: 9999 !important;
+        z-index: 1000 !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         display: flex;
         align-items: center;
@@ -42,15 +41,8 @@ st.markdown("""
         width: 100%;
         box-sizing: border-box;
         height: 50px;
-    }
-    
-    /* Push main content down to account for fixed header */
-    [data-testid="stAppViewContainer"],
-    [data-testid="stMainBlockContainer"],
-    .main {
-        margin-top: 60px !important;
-        padding-top: 0 !important;
-        padding-bottom: 70px !important;
+        border-radius: 8px;
+        margin-bottom: 10px;
     }
 
     /* Ensure chat input is fully visible */
@@ -141,23 +133,34 @@ if "pending_query" not in st.session_state:
 
 # Load API URL from environment or Streamlit secrets, fall back to localhost
 def get_api_url():
-    env_api_url = os.getenv("API_URL")
+    env_api_url = os.getenv("API_URL") or os.getenv("api_url")
     if env_api_url:
         return env_api_url
 
-    project_secrets = os.path.join(os.getcwd(), ".streamlit", "secrets.toml")
-    user_secrets = os.path.join(os.path.expanduser("~"), ".streamlit", "secrets.toml")
+    secret_paths = [
+        os.path.join(os.getcwd(), ".streamlit", "secrets.toml"),
+        os.path.join(os.path.expanduser("~"), ".streamlit", "secrets.toml"),
+        "/app/.streamlit/secrets.toml",
+        "/root/.streamlit/secrets.toml"
+    ]
 
-    if os.path.exists(project_secrets) or os.path.exists(user_secrets):
+    for secret_path in secret_paths:
+        if not os.path.exists(secret_path):
+            continue
         try:
-            return st.secrets.get("api_url", "http://localhost:8000")
+            with open(secret_path, "rb") as file:
+                secrets_data = tomllib.load(file)
+            api_url = secrets_data.get("api_url")
+            if api_url:
+                return api_url
         except Exception:
-            pass
+            continue
 
     return "http://localhost:8000"
 
 if "api_url" not in st.session_state:
     st.session_state.api_url = get_api_url()
+st.session_state.api_url = (st.session_state.api_url or "http://localhost:8000").rstrip("/")
 if "session_id" not in st.session_state:
     st.session_state.session_id = None
 if "api_session_status" not in st.session_state:
@@ -265,7 +268,7 @@ with st.sidebar:
         value=st.session_state.api_url,
         help="Enter the FastAPI server URL"
     )
-    st.session_state.api_url = api_url
+    st.session_state.api_url = (api_url or "").strip().rstrip("/")
     
     show_raw = st.checkbox("Show raw data", value=False)
     # Chart options
@@ -283,8 +286,9 @@ except:
 # Build header status
 session_status = "🔑 Active" if st.session_state.session_id else "📋 New"
 api_indicator = "✅ Connected" if api_status == "connected" else "❌ Error"
+api_status_class = "status-connected" if api_status == "connected" else "status-error"
 
-# Render fixed header using HTML - appears at top of main content
+# Render sticky header
 st.markdown(f"""
 <div class="header-container">
     <div class="header-left">
@@ -295,7 +299,7 @@ st.markdown(f"""
     </div>
     <div class="header-status">
         <span class="status-badge status-active">{session_status}</span>
-        <span class="status-badge status-connected">{api_indicator}</span>
+        <span class="status-badge {api_status_class}">{api_indicator}</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -500,8 +504,8 @@ if user_query:
                 st.error(api_response.text)
 
         except requests.exceptions.ConnectionError:
-            st.error("❌ Cannot connect to API. Make sure the server is running on http://localhost:8000")
-            st.info("Run `python main.py` in another terminal to start the server")
+            st.error(f"❌ Cannot connect to API at {st.session_state.api_url}")
+            st.info("For Streamlit Cloud, set API Endpoint to your public backend URL (for example: https://<your-backend>/)")
         except requests.exceptions.Timeout:
             st.error("❌ Request timeout. The server is taking too long to respond.")
         except Exception as e:
