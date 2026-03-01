@@ -294,7 +294,7 @@ st.markdown(f"""
 <div class="header-container">
     <div class="header-left">
         <div>
-            <p class="header-title">💳 InsightX</p>
+            <p class="header-title">💳 FinTalk</p>
             <p class="header-tagline">Payment Analytics AI</p>
         </div>
     </div>
