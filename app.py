@@ -424,16 +424,15 @@ def render_chart(chart_data, top_n=10):
         pass
 
 # Display conversation history (chat-like format)
-st.markdown('<div id="conversation-anchor"></div>', unsafe_allow_html=True)
 
 if st.session_state.auto_scroll_to_conversation:
     components.html(
         """
         <script>
         const doc = window.parent.document;
-        const anchor = doc.getElementById('conversation-anchor');
+        const anchor = doc.getElementById('conversation-end-anchor');
         if (anchor) {
-            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            anchor.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
         </script>
         """,
@@ -460,6 +459,8 @@ if st.session_state.conversation_history:
                 # Render chart for this response
                 if msg.get("raw_data"):
                     render_chart(msg["raw_data"], st.session_state.get('top_n', 10))
+
+st.markdown('<div id="conversation-end-anchor"></div>', unsafe_allow_html=True)
 
 st.divider()
 
