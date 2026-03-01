@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import requests
 import json
 import os
@@ -128,6 +129,8 @@ if "conversation_history" not in st.session_state:
     st.session_state.conversation_history = []
 if "pending_query" not in st.session_state:
     st.session_state.pending_query = None
+if "auto_scroll_to_conversation" not in st.session_state:
+    st.session_state.auto_scroll_to_conversation = False
 
 # Load API URL from environment or Streamlit secrets, fall back to localhost
 def get_api_url():
@@ -421,6 +424,23 @@ def render_chart(chart_data, top_n=10):
         pass
 
 # Display conversation history (chat-like format)
+st.markdown('<div id="conversation-anchor"></div>', unsafe_allow_html=True)
+
+if st.session_state.auto_scroll_to_conversation:
+    components.html(
+        """
+        <script>
+        const doc = window.parent.document;
+        const anchor = doc.getElementById('conversation-anchor');
+        if (anchor) {
+            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        </script>
+        """,
+        height=0,
+    )
+    st.session_state.auto_scroll_to_conversation = False
+
 if st.session_state.conversation_history:
     st.subheader("💬 Conversation")
     
@@ -495,6 +515,7 @@ if user_query:
                 })
 
                 st.success("✓ Analysis Complete!")
+                st.session_state.auto_scroll_to_conversation = True
                 st.rerun()
 
             else:
