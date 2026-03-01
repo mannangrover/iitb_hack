@@ -141,12 +141,20 @@ if "pending_query" not in st.session_state:
 
 # Load API URL from environment or Streamlit secrets, fall back to localhost
 def get_api_url():
-    # Try Streamlit secrets first (for Streamlit Cloud)
-    try:
-        return st.secrets.get("api_url", "http://localhost:8000")
-    except:
-        # Fall back to environment variable
-        return os.getenv("API_URL", "http://localhost:8000")
+    env_api_url = os.getenv("API_URL")
+    if env_api_url:
+        return env_api_url
+
+    project_secrets = os.path.join(os.getcwd(), ".streamlit", "secrets.toml")
+    user_secrets = os.path.join(os.path.expanduser("~"), ".streamlit", "secrets.toml")
+
+    if os.path.exists(project_secrets) or os.path.exists(user_secrets):
+        try:
+            return st.secrets.get("api_url", "http://localhost:8000")
+        except Exception:
+            pass
+
+    return "http://localhost:8000"
 
 if "api_url" not in st.session_state:
     st.session_state.api_url = get_api_url()

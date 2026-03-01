@@ -1,1 +1,1 @@
-web: python run_combined.py
+web: python main.py
