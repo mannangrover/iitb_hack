@@ -27,20 +27,18 @@ st.markdown("""
         padding-top: 0;
     }
     
-    /* Sticky header (cloud-safe) */
+    /* Header block */
     .header-container {
-        position: sticky !important;
-        top: 0 !important;
+        position: relative !important;
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 12px 20px;
-        z-index: 1000 !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         display: flex;
         align-items: center;
         justify-content: space-between;
         width: 100%;
         box-sizing: border-box;
-        height: 50px;
+        min-height: 50px;
         border-radius: 8px;
         margin-bottom: 10px;
     }
