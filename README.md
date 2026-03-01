@@ -56,11 +56,6 @@ InsightX/
 ## 🚀 Installation & Setup
 
 ### 1. Clone and Navigate to Project
-
-```bash
-cd d:\Dhiraj\insightx_ai
-```
-
 ### 2. Create Virtual Environment
 
 ```bash
@@ -128,17 +123,9 @@ python -m src.database.data_loader your_data.csv
 python main.py
 ```
 
-The API server will start at `http://localhost:8000`
 
 ### Start the Streamlit UI (Frontend)
 
-In a **new terminal**:
-
-```bash
-streamlit run app.py
-```
-
-The UI will open at `http://localhost:8501`
 
 ### Quick Start (Both Services)
 
@@ -152,7 +139,6 @@ python main.py
 streamlit run app.py
 ```
 
-Then open your browser to **http://localhost:8501**
 
 ## 🌐 User Interface Features
 
