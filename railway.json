@@ -1,0 +1,10 @@
+{
+  "build": {
+    "builder": "nixpacks"
+  },
+  "deploy": {
+    "startCommand": "python run_combined.py",
+    "restartPolicyMaxRetries": 5,
+    "restartPolicyWindowMs": 600000
+  }
+}
